@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Payments API
+  version: 2.4.0
+  description: |
+    社内決済基盤の公開REST API。決済・返金・顧客・請求書を扱う。
+    認証は Bearer トークン。レート制限は 100 req/s。
+servers:
+  - url: https://api.example.com/v2
+paths:
+  /payments:
+    post:
+      summary: 決済を作成する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /payments/{id}:
+    get:
+      summary: 決済を取得する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /payments/{id}/capture:
+    post:
+      summary: 与信を確定する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /payments/{id}/refund:
+    post:
+      summary: 返金する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /customers:
+    post:
+      summary: 顧客を登録する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /customers/{id}:
+    get:
+      summary: 顧客を取得する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /webhooks:
+    post:
+      summary: Webhook送信先を登録する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+  /invoices:
+    get:
+      summary: 請求書を一覧する
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 不正なリクエスト
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer

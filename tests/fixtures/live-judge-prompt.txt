@@ -1,0 +1,320 @@
+あなたは zoomdoc ドキュメント移行品質の独立した厳格な監査官（LLM Judge）です。
+以下の移行前ドキュメントと、適用された移行結果（プラン: plan_c_hybrid）を評価し、100点満点で採点してください。
+
+## 評価ルーブリック (合計100点)
+1. **要約・タイトルの意味的忠実度 (最大30点)**:
+   - title と description が本文内容を正確に反映しているか。ハルシネーションや不当な省略がないか。
+2. **分類・再配置の妥当性 (最大30点)**:
+   - プランBの場合: 既存パスが維持され、無理な改変がないか。
+   - プランCの場合: 有効な仕様・ガイドが適切に整理され、古いメモや一時ファイルのみが archive/ に選別されているか。
+3. **ディレクトリ責務の整合性 (最大20点)**:
+   - 各ディレクトリに配備された description.md の内容が、配下ファイルの共通責務と整合しているか。
+4. **完全性と非破壊性 (最大20点)**:
+   - 元のファイルがすべて漏れなく追跡（migration-log）されているか。重要情報が失われていないか。
+
+## 合格基準
+- totalScore >= 80 かつ criticalIssues が空であること。
+
+## 入力データ
+
+### 移行前ドキュメント一覧
+[
+  {
+    "path": "docs/api-specs.md",
+    "excerpt": "# REST API 仕様概要\n認証ヘッダー仕様（Bearer JWT）および主要エンドポイント（/api/v1/auth, /api/v1/users）のエラーコード仕様。"
+  },
+  {
+    "path": "docs/architecture.md",
+    "excerpt": "# 全体システム構成図とアーキテクチャ\nNext.js フロントエンド、NestJS バックエンド、PostgreSQL データベースからなる構成。\n各マイクロサービス間の通信プロトコルとデータフローの概要。"
+  },
+  {
+    "path": "docs/auth-flow.md",
+    "excerpt": "# 認証・認可フロー仕様書\nOpenID Connect (OIDC) プロバイダ連携とリフレッシュトークンローテーションの処理シーケンス。"
+  },
+  {
+    "path": "docs/db-schema.md",
+    "excerpt": "# データベース物理設計\nPrisma を用いたスキーマ定義、users, organizations, billing テーブルのリレーションとインデックス設計。"
+  },
+  {
+    "path": "docs/draft_v1_deprecated.md",
+    "excerpt": "# ドラフト版旧課金仕様（非推奨）\nStripe導入前の独自決済ゲートウェイ検討書。不採用となったため不要。"
+  },
+  {
+    "path": "docs/events.md",
+    "excerpt": "# ドメインイベント設計\nRabbitMQ を介した非同期イベントキューのメッセージフォーマットとリトライポリシー。"
+  },
+  {
+    "path": "docs/faq.md",
+    "excerpt": "# よくある質問 (FAQ)\n社内ツールや認証トークンの発行方法についてのよくある問い合わせと回答集です。"
+  },
+  {
+    "path": "docs/features/billing/invoices.md",
+    "excerpt": "# 請求書PDF生成機能\nPDFKit を用いた適格請求書（インボイス制度対応）フォーマット生成ロジック。"
+  },
+  {
+    "path": "docs/features/billing/stripe-integration.md",
+    "excerpt": "# Stripe 決済連携仕様\nWebhook（customer.subscription.updated）の署名検証とプラン更新処理の実装詳細。"
+  },
+  {
+    "path": "docs/features/notifications/email.md",
+    "excerpt": "# メール送信サービス連携仕様\nSendGrid API を利用したトランザクションメールのテンプレート管理と配信停止処理。"
+  },
+  {
+    "path": "docs/features/notifications/push.md",
+    "excerpt": "# Web Push 通知配信仕様\nFirebase Cloud Messaging (FCM) トークンの登録・無効化とバッチ通知配信の仕様。"
+  },
+  {
+    "path": "docs/meeting_notes_2024.md",
+    "excerpt": "# 2024年1月定例ミーティング議事録\nQ1のロードマップ検討とメンバーのアサイン調整メモ。"
+  },
+  {
+    "path": "docs/memo_2023_04.md",
+    "excerpt": "# 2023年4月 開発キックオフメモ\n当時の初期メンバーの雑多なアイデアメモ。現在の実装とは全く異なる古いDB案が書かれている。"
+  },
+  {
+    "path": "docs/memo_auth_old.md",
+    "excerpt": "# 【廃止】旧Cookie認証の検討メモ\nv1リリース前に破棄されたCookieベース認証のメモ。参照禁止。"
+  },
+  {
+    "path": "docs/operations/backup.md",
+    "excerpt": "# データベースバックアップ＆リストア手順\nAWS RDS の自動スナップショット取得設定と、災害復旧時の特定時点リカバリ(PITR)手順。"
+  },
+  {
+    "path": "docs/operations/deploy.md",
+    "excerpt": "# 本番デプロイ手順書\nGitHub Actions をトリガーとした AWS ECS への blue/green デプロイ手順と承認フロー。"
+  },
+  {
+    "path": "docs/operations/incident-response.md",
+    "excerpt": "# 障害対応・オンコール手順\nPagerDuty アラート検知時の初動対応、Slack 障害チャンネル作成、ロールバック判断基準。"
+  },
+  {
+    "path": "docs/operations/monitoring.md",
+    "excerpt": "# 監視・メトリクス設計\nDatadog による APM 監視、レイテンシSLOおよびエラーレートのアラート閾値設定。"
+  },
+  {
+    "path": "docs/quickstart.md",
+    "excerpt": "# クイックスタートガイド\n開発者が最初の5分でAPIを実行するための手順です。\ncurl http://localhost:3000/health を実行して疎通確認を行います。"
+  },
+  {
+    "path": "docs/security.md",
+    "excerpt": "# セキュリティガイドラインとポリシー\nCORS設定、CSPヘッダーの適用、パスワードハッシュ（Argon2id）の暗号化方式要件。"
+  },
+  {
+    "path": "docs/setup.md",
+    "excerpt": "# ローカル環境セットアップ手順\nNode.js 22 と Docker のセットアップ手順です。\nリポジトリをクローンした後、docker compose up を実行して環境を起動します。\n環境変数は .env.example をコピーして .env を作成してください。"
+  },
+  {
+    "path": "docs/temp_scratch.md",
+    "excerpt": "# 一時作業用スクラッチ\ncurl のテストペイロードの貼り付けログ。後で消す。"
+  },
+  {
+    "path": "docs/tips.md",
+    "excerpt": "# 開発Tips集\nVSCodeの推奨拡張機能や、デバッグ実行時のショートカット集。"
+  },
+  {
+    "path": "docs/todo_ideas.md",
+    "excerpt": "# アイデア出しブレスト用TODO\n将来的にやりたい機能の走り書きリスト（検索機能、ダークモードなど）。"
+  },
+  {
+    "path": "docs/troubleshooting.md",
+    "excerpt": "# トラブルシューティング\nポート3000が競合する場合の対処法や、DB接続エラー時のキャッシュクリア手順を記載しています。"
+  }
+]
+
+### 適用された移行ログ (migration-log)
+[
+  {
+    "from": "docs/api-specs.md",
+    "to": "docs/architecture/api-specs.md",
+    "title": "api specs",
+    "description": "認証ヘッダー仕様（Bearer JWT）および主要エンドポイント（/api/v1/auth, /api/v1/users）のエラーコード仕様。"
+  },
+  {
+    "from": "docs/architecture.md",
+    "to": "docs/architecture/architecture.md",
+    "title": "architecture",
+    "description": "Next.js フロントエンド、NestJS バックエンド、PostgreSQL データベースからなる構成。"
+  },
+  {
+    "from": "docs/auth-flow.md",
+    "to": "docs/architecture/auth-flow.md",
+    "title": "auth flow",
+    "description": "OpenID Connect (OIDC) プロバイダ連携とリフレッシュトークンローテーションの処理シーケンス。"
+  },
+  {
+    "from": "docs/db-schema.md",
+    "to": "docs/architecture/db-schema.md",
+    "title": "db schema",
+    "description": "Prisma を用いたスキーマ定義、users, organizations, billing テーブルのリレーションとインデックス設計。"
+  },
+  {
+    "from": "docs/draft_v1_deprecated.md",
+    "to": "docs/archive/draft_v1_deprecated.md",
+    "title": "draft v1 deprecated",
+    "description": "Stripe導入前の独自決済ゲートウェイ検討書。不採用となったため不要。"
+  },
+  {
+    "from": "docs/events.md",
+    "to": "docs/architecture/events.md",
+    "title": "events",
+    "description": "RabbitMQ を介した非同期イベントキューのメッセージフォーマットとリトライポリシー。"
+  },
+  {
+    "from": "docs/faq.md",
+    "to": "docs/guides/faq.md",
+    "title": "faq",
+    "description": "社内ツールや認証トークンの発行方法についてのよくある問い合わせと回答集です。"
+  },
+  {
+    "from": "docs/features/billing/invoices.md",
+    "to": "docs/features/billing/invoices.md",
+    "title": "invoices",
+    "description": "PDFKit を用いた適格請求書（インボイス制度対応）フォーマット生成ロジック。"
+  },
+  {
+    "from": "docs/features/billing/stripe-integration.md",
+    "to": "docs/features/billing/stripe-integration.md",
+    "title": "stripe integration",
+    "description": "Webhook（customer.subscription.updated）の署名検証とプラン更新処理の実装詳細。"
+  },
+  {
+    "from": "docs/features/notifications/email.md",
+    "to": "docs/features/notifications/email.md",
+    "title": "email",
+    "description": "SendGrid API を利用したトランザクションメールのテンプレート管理と配信停止処理。"
+  },
+  {
+    "from": "docs/features/notifications/push.md",
+    "to": "docs/features/notifications/push.md",
+    "title": "push",
+    "description": "Firebase Cloud Messaging (FCM) トークンの登録・無効化とバッチ通知配信の仕様。"
+  },
+  {
+    "from": "docs/meeting_notes_2024.md",
+    "to": "docs/archive/meeting_notes_2024.md",
+    "title": "meeting notes 2024",
+    "description": "Q1のロードマップ検討とメンバーのアサイン調整メモ。"
+  },
+  {
+    "from": "docs/memo_2023_04.md",
+    "to": "docs/archive/memo_2023_04.md",
+    "title": "memo 2023 04",
+    "description": "当時の初期メンバーの雑多なアイデアメモ。現在の実装とは全く異なる古いDB案が書かれている。"
+  },
+  {
+    "from": "docs/memo_auth_old.md",
+    "to": "docs/archive/memo_auth_old.md",
+    "title": "memo auth old",
+    "description": "v1リリース前に破棄されたCookieベース認証のメモ。参照禁止。"
+  },
+  {
+    "from": "docs/operations/backup.md",
+    "to": "docs/operations/backup.md",
+    "title": "backup",
+    "description": "AWS RDS の自動スナップショット取得設定と、災害復旧時の特定時点リカバリ(PITR)手順。"
+  },
+  {
+    "from": "docs/operations/deploy.md",
+    "to": "docs/operations/deploy.md",
+    "title": "deploy",
+    "description": "GitHub Actions をトリガーとした AWS ECS への blue/green デプロイ手順と承認フロー。"
+  },
+  {
+    "from": "docs/operations/incident-response.md",
+    "to": "docs/operations/incident-response.md",
+    "title": "incident response",
+    "description": "PagerDuty アラート検知時の初動対応、Slack 障害チャンネル作成、ロールバック判断基準。"
+  },
+  {
+    "from": "docs/operations/monitoring.md",
+    "to": "docs/operations/monitoring.md",
+    "title": "monitoring",
+    "description": "Datadog による APM 監視、レイテンシSLOおよびエラーレートのアラート閾値設定。"
+  },
+  {
+    "from": "docs/quickstart.md",
+    "to": "docs/guides/quickstart.md",
+    "title": "quickstart",
+    "description": "開発者が最初の5分でAPIを実行するための手順です。"
+  },
+  {
+    "from": "docs/security.md",
+    "to": "docs/architecture/security.md",
+    "title": "security",
+    "description": "CORS設定、CSPヘッダーの適用、パスワードハッシュ（Argon2id）の暗号化方式要件。"
+  },
+  {
+    "from": "docs/setup.md",
+    "to": "docs/guides/setup.md",
+    "title": "setup",
+    "description": "Node.js 22 と Docker のセットアップ手順です。"
+  },
+  {
+    "from": "docs/temp_scratch.md",
+    "to": "docs/archive/temp_scratch.md",
+    "title": "temp scratch",
+    "description": "curl のテストペイロードの貼り付けログ。後で消す。"
+  },
+  {
+    "from": "docs/tips.md",
+    "to": "docs/guides/tips.md",
+    "title": "tips",
+    "description": "VSCodeの推奨拡張機能や、デバッグ実行時のショートカット集。"
+  },
+  {
+    "from": "docs/todo_ideas.md",
+    "to": "docs/archive/todo_ideas.md",
+    "title": "todo ideas",
+    "description": "将来的にやりたい機能の走り書きリスト（検索機能、ダークモードなど）。"
+  },
+  {
+    "from": "docs/troubleshooting.md",
+    "to": "docs/guides/troubleshooting.md",
+    "title": "troubleshooting",
+    "description": "ポート3000が競合する場合の対処法や、DB接続エラー時のキャッシュクリア手順を記載しています。"
+  }
+]
+
+### 生成されたディレクトリ責務 (description.md)
+[
+  {
+    "dir": "docs/architecture",
+    "title": "Architecture Specifications",
+    "description": "システムアーキテクチャ、DB設計、APIおよび認証仕様"
+  },
+  {
+    "dir": "docs/guides",
+    "title": "Developer Guides",
+    "description": "環境構築、クイックスタート、トラブルシューティング手順"
+  },
+  {
+    "dir": "docs/operations",
+    "title": "Operations Manual",
+    "description": "インフラ運用、デプロイ、監視および障害対応マニュアル"
+  },
+  {
+    "dir": "docs/archive",
+    "title": "Archived Documents",
+    "description": "過去の議事録、不採用ドラフト、古い検討メモ等の保管庫"
+  },
+  {
+    "dir": "docs/features",
+    "title": "Feature Specifications",
+    "description": "個別ドメイン機能（決済、通知等）の実装仕様"
+  }
+]
+
+## 回答フォーマット
+必ず以下の純粋な JSON フォーマットのみを出力してください（マークダウンのコードブロック等は含めないでください）。
+{
+  "totalScore": 85,
+  "passed": true,
+  "breakdown": {
+    "semanticFidelity": 27,
+    "classificationLogic": 26,
+    "directoryIntegrity": 17,
+    "completeness": 15
+  },
+  "feedback": "全体的な評価コメント",
+  "criticalIssues": []
+}

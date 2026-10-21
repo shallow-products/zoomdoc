@@ -1,0 +1,31 @@
+{
+  "docs/setup.md": "docs/guides/setup.md",
+  "docs/quickstart.md": "docs/guides/quickstart.md",
+  "docs/troubleshooting.md": "docs/guides/troubleshooting.md",
+  "docs/faq.md": "docs/guides/faq.md",
+  "docs/tips.md": "docs/guides/tips.md",
+
+  "docs/architecture.md": "docs/architecture/architecture.md",
+  "docs/db-schema.md": "docs/architecture/db-schema.md",
+  "docs/api-specs.md": "docs/architecture/api-specs.md",
+  "docs/security.md": "docs/architecture/security.md",
+  "docs/events.md": "docs/architecture/events.md",
+  "docs/auth-flow.md": "docs/architecture/auth-flow.md",
+
+  "docs/memo_2023_04.md": "docs/archive/memo_2023_04.md",
+  "docs/memo_auth_old.md": "docs/archive/memo_auth_old.md",
+  "docs/meeting_notes_2024.md": "docs/archive/meeting_notes_2024.md",
+  "docs/temp_scratch.md": "docs/archive/temp_scratch.md",
+  "docs/draft_v1_deprecated.md": "docs/archive/draft_v1_deprecated.md",
+  "docs/todo_ideas.md": "docs/archive/todo_ideas.md",
+
+  "docs/operations/deploy.md": "docs/operations/deploy.md",
+  "docs/operations/incident-response.md": "docs/operations/incident-response.md",
+  "docs/operations/backup.md": "docs/operations/backup.md",
+  "docs/operations/monitoring.md": "docs/operations/monitoring.md",
+
+  "docs/features/billing/stripe-integration.md": "docs/architecture/billing-stripe-integration.md",
+  "docs/features/billing/invoices.md": "docs/architecture/billing-invoices.md",
+  "docs/features/notifications/email.md": "docs/architecture/notifications-email.md",
+  "docs/features/notifications/push.md": "docs/architecture/notifications-push.md"
+}

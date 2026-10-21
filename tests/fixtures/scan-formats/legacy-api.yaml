@@ -1,0 +1,16 @@
+openapi: 3.0.0
+info:
+  title: Legacy Orders API (v1)
+  version: 1.9.0
+  description: |
+    【廃止】v1 の注文API。2024年末にサービス終了済みで、新規利用は禁止。
+    参照のために残している。
+paths:
+  /orders:
+    get:
+      summary: 注文を一覧する
+    post:
+      summary: 注文を作成する
+  /orders/{id}:
+    get:
+      summary: 注文を取得する

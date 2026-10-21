@@ -1,0 +1,10 @@
+{
+  "zoomdoc": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node ./scripts/hooks/run.js --env=agy"
+      }
+    ]
+  }
+}

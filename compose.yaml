@@ -1,0 +1,38 @@
+services:
+  zoomdoc-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: zoomdoc-dev
+    volumes:
+      - .:/app
+      - zoomdoc-node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    working_dir: /app
+
+  # E2E with a real agent (Claude Code CLI). Authenticate with CLAUDE_CODE_OAUTH_TOKEN:
+  # issue it with `claude setup-token` and write `CLAUDE_CODE_OAUTH_TOKEN=<token>` to
+  # ~/.config/zoomdoc/e2e.env, outside the repository (or point ZOOMDOC_E2E_ENV_FILE elsewhere).
+  # Throwaway samples go to ~/zoomdoc-walkthrough, also outside the repository.
+  zoomdoc-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: e2e
+    container_name: zoomdoc-e2e
+    volumes:
+      - .:/app
+      - zoomdoc-node_modules:/app/node_modules
+      - ${HOME}/zoomdoc-walkthrough:/walkthrough
+    env_file:
+      - path: ${ZOOMDOC_E2E_ENV_FILE:-${HOME}/.config/zoomdoc/e2e.env}
+        required: false
+    environment:
+      - NODE_ENV=development
+    working_dir: /app
+
+volumes:
+  zoomdoc-node_modules:
+    name: zoomdoc-node_modules

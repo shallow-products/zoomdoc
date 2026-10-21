@@ -1,0 +1,12 @@
+{
+  "payments-api.yaml": "architecture",
+  "events.asyncapi.json": "architecture",
+  "onboarding.txt": "guides",
+  "deploy-runbook.rst": "guides",
+  "adr-database.adoc": "decisions",
+  "auth-notes-2023.txt": "archive",
+  "coding-style.adoc": "conventions",
+  "perf-targets.rst": "evaluation",
+  "product-vision.txt": "product",
+  "legacy-api.yaml": "archive"
+}

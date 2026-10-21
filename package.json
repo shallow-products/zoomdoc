@@ -1,0 +1,59 @@
+{
+  "name": "zoomdoc",
+  "version": "0.1.0",
+  "description": "Schema-driven document governance plugin for AI coding agents",
+  "type": "module",
+  "private": true,
+  "files": [
+    "dist",
+    "hooks.json",
+    "hooks",
+    "scripts/hooks",
+    "skills",
+    ".claude-plugin",
+    "commands",
+    ".zoomdoc",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/hooks.test.ts tests/schema_integrity.test.ts tests/rewrite_refs.test.ts tests/migrate_cli.test.ts tests/schema_gaps.test.ts tests/docs_root.test.ts tests/apply_cleanup.test.ts tests/hook_quiet.test.ts tests/hook_detections.test.ts tests/frontmatter_integrity.test.ts tests/doc_lint_cli.test.ts tests/extractors.test.ts",
+    "test:e2e": "vitest run tests/dynamic_agent_e2e.test.ts",
+    "test:watch": "vitest",
+    "lint": "biome check src tests",
+    "lint:fix": "biome check --write src tests",
+    "format": "biome format --write src tests",
+    "typecheck": "tsc --noEmit",
+    "lint:doc": "node scripts/doc_lint.js",
+    "zoomdoc:init": "node scripts/init.js"
+  },
+  "keywords": [
+    "antigravity",
+    "claude-plugin",
+    "documentation"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shallow-products/zoomdoc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shallow-products/zoomdoc/issues"
+  },
+  "homepage": "https://github.com/shallow-products/zoomdoc#readme",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.13.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.5"
+  }
+}

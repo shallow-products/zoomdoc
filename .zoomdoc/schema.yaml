@@ -1,0 +1,143 @@
+# zoomdoc schema (a description for people; these comments are removed when the schema is injected into the agent)
+#
+# What is handled deterministically is only the folder paths and whether the required
+# fields of each document entry are filled in. Every field value is natural language,
+# which the agent reads and follows.
+#
+# folders.<path>
+#   description: what the folder is for (one or two lines)
+#   documents:   the document entries (optional; without them the description alone works)
+#     - name:        a file name, or a naming rule (natural language)
+#       description: what the document is
+#       template:    the full template path (optional; .zoomdoc/templates/…)
+#       create:      when to create a new one
+#       update:      when to update it (write "not updated" if it never is)
+#       remove:      conditions for deleting or moving (optional; if omitted, nothing is deleted or moved without approval)
+#
+# The common writing rules (front matter, dates, subdirectories and so on) live in the zoomdoc:write skill.
+# Put exceptions in that entry's description, create or update.
+# The schema enters the agent's context as is every session. Move long explanations into templates.
+version: "3.0"
+
+folders:
+  docs/product:
+    description: What we build and for whom. Product requirements and acceptance criteria.
+    documents:
+      - name: vision.md
+        description: Reason for existing, the problem, the value and the non-goals.
+        template: .zoomdoc/templates/product-vision.md
+        create: When the idea or direction of a new product is agreed.
+        update: Only on a fundamental pivot.
+      - name: requirements.md
+        description: Functional requirements, user stories and acceptance criteria.
+        template: .zoomdoc/templates/product-requirements.md
+        create: When the first functional requirements are agreed.
+        update: When a feature is added, changed or retired by agreement.
+      - name: <slug>.md (one per large individual feature)
+        description: Requirements of a large individual feature.
+        template: .zoomdoc/templates/product-spec.md
+        create: When the requirements of a large individual feature are written on their own.
+        update: When that feature's requirements change.
+  docs/decisions:
+    description: Why we decided what we decided. Architecture decision records (ADRs), one decision per file.
+    documents:
+      - name: YYYY-MM-DD-<slug>.md. Only if the existing ADRs already follow sequence numbers (NNNN-<slug>.md), match them. If there are none, use the date format.
+        description: One decision, with its reasons and alternatives.
+        template: .zoomdoc/templates/adr.md
+        create: When a library, database or major architecture is chosen, or a major design direction changes.
+        update: As a rule, not updated. When a decision changes, write a new decision instead of rewriting the old one.
+  docs/architecture:
+    description: How the system is structured and designed today (structure that cannot be read from the code).
+    documents:
+      - name: tech-stack.md
+        description: The adopted tech stack and environment constraints.
+        template: .zoomdoc/templates/tech-stack.md
+        create: When the tech stack is agreed.
+        update: When a technology is adopted, changed or retired.
+      - name: overview.md
+        description: System overview, layers and how components connect.
+        template: .zoomdoc/templates/overview.md
+        create: When the overview is first written down.
+        update: When the structure or component interaction changes.
+      - name: <subsystem>-architecture.md
+        description: Detailed structure, data flow and state transitions of a subsystem.
+        template: .zoomdoc/templates/subsystem-architecture.md
+        create: When a subsystem is designed.
+        update: When its structure, data flow or state transitions change.
+      - name: <slug>.md
+        description: One-off design notes and technical spikes (proofs of concept).
+        template: .zoomdoc/templates/architecture-spike.md
+        create: When a design is explored or a technical spike is done.
+        update: Not updated (a record of that moment).
+        remove: When the conclusion has become a decision and the note has served its purpose, move it to docs/archive.
+  docs/evaluation:
+    description: Quality evaluation, test strategy, non-functional requirements and benchmark results. Names are fixed.
+    documents:
+      - name: test-strategy.md
+        description: Test policy and CI strategy.
+        template: .zoomdoc/templates/test-strategy.md
+        create: When the test policy is drawn up.
+        update: When the policy or the CI setup changes.
+      - name: non-functional.md
+        description: SLAs, performance targets and resource limits.
+        template: .zoomdoc/templates/non-functional.md
+        create: When performance targets and limits are set.
+        update: When an SLA or a target changes.
+      - name: benchmark.md
+        description: Evaluation scores and their trend.
+        template: .zoomdoc/templates/evaluation.md
+        create: When the first measurement is taken.
+        update: When E2E or benchmarks are run and the numbers change.
+      - name: trajectory.md
+        description: The history of decisions about the evaluation design.
+        template: .zoomdoc/templates/evaluation.md
+        create: When the evaluation policy is decided.
+        update: When the evaluation policy or the pass thresholds change (append the history).
+      - name: insights.md
+        description: Findings from tuning.
+        template: .zoomdoc/templates/evaluation.md
+        create: When the first finding is obtained.
+        update: When trial and error reveals a cause and effect, or when an existing finding stops being valid.
+  docs/guides:
+    description: How to operate and run things. Reproducible procedures for environment setup, setup and troubleshooting.
+    documents:
+      - name: setup.md
+        description: How to set up and start the development environment.
+        template: .zoomdoc/templates/setup.md
+        create: When the development environment procedure is established.
+        update: When the setup or start procedure changes.
+      - name: <task>.md
+        description: Other procedures (deploying, running tests, troubleshooting and so on).
+        template: .zoomdoc/templates/guide.md
+        create: When a reproducible procedure is established.
+        update: When the procedure changes.
+  docs/conventions:
+    description: How to write and how to build. Coding conventions and documentation conventions.
+    documents:
+      - name: <topic>-conventions.md
+        description: Conventions the whole team follows.
+        template: .zoomdoc/templates/conventions.md
+        create: When a convention is established.
+        update: When a convention is revised.
+  docs/operations:
+    description: Runbooks for keeping things running (operating procedures, incident response and monitoring). Less something written as you go, more a home for existing material.
+    documents:
+      - name: <slug>.md
+        description: Operating procedures and runbooks.
+        template: .zoomdoc/templates/guide.md
+        create: When an operating procedure is established.
+        update: When the procedure or the setup changes.
+  docs/references:
+    description: Material for reference, such as external specifications, research notes and glossaries.
+    documents:
+      - name: <slug>.md
+        description: Reference material.
+        create: When an external specification or research result should be kept.
+        update: When the source changes.
+  docs/archive:
+    description: A place for temporary notes and old material that has served its purpose. Read-only.
+    documents:
+      - name: <slug>.md
+        description: Archived old material.
+        create: When a document has served its purpose (move it here).
+        update: Not updated (read-only).
