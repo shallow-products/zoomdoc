@@ -20,7 +20,7 @@ The user must see, within the first lines, what you are asking and what will cha
 1. **Open with the question**, in one sentence, before any detail. Example: "Keep the current layout or redesign it?" Put background after it.
 2. **One decision per message.** Facts that need no decision (git is clean, no monorepo) go in one line, or are left out. State a default (an excluded folder, a file left in place) in the same line as the question, not as a separate question.
 3. **Show current and after side by side.** For every option, show the change as a tree with `+` new, `~` changed, `-` removed and a plain line unchanged, or say "no change" in one line. Never describe a change only in words.
-4. **Options are short**: a label, what changes (one line), the consequence (one line). Put the recommended option first and mark it with the reason in one line.
+4. **Options are short**: a label, what changes (one line), the consequence (one line). Do not put the reason inside the options. After the last option, write the recommendation and its reason ("Recommended: 1, because ...") in one or two lines.
 5. **Say what happens next** for each answer in one line (for example: "Choosing 1 changes nothing, so stages 3 and 4 are skipped").
 6. Show layouts as directory trees in a code block, one description line per folder, with the existing document count where there is one. Show all options in the same format.
 
