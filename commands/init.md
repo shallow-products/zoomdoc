@@ -9,10 +9,20 @@ Adopts `zoomdoc` in a project that usually already has documents. **The layout i
 
 ## Rules for every stage
 
-- **Never decide silently.** Before each step, tell the user what you will do and why. This includes following your own recommendation. Treat every choice as the user's choice and repeat it back.
-- **Show layouts as directory trees** in a code block, one line of description per folder, with the existing document count where there is one. Show all options in the same format.
+- **Never decide silently.** Say what you will do and why before each step, including when you follow your own recommendation. Treat every choice as the user's choice and repeat it back.
 - **Write nothing before the schema is approved.** Stages 0 to 3 only read.
 - Every stage is safe to run again. If a stage was already done, say so and ask whether to redo it.
+
+## How to write each message
+
+The user must see, within the first lines, what you are asking and what will change. Do not make them read a report to find the question.
+
+1. **Open with the question**, in one sentence, before any detail. Example: "Keep the current layout or redesign it?" Put background after it.
+2. **One decision per message.** Facts that need no decision (git is clean, no monorepo) go in one line, or are left out. State a default (an excluded folder, a file left in place) in the same line as the question, not as a separate question.
+3. **Show current and after side by side.** For every option, show the change as a tree with `+` new, `~` changed, `-` removed and a plain line unchanged, or say "no change" in one line. Never describe a change only in words.
+4. **Options are short**: a label, what changes (one line), the consequence (one line). Put the recommended option first and mark it with the reason in one line.
+5. **Say what happens next** for each answer in one line (for example: "Choosing 1 changes nothing, so stages 3 and 4 are skipped").
+6. Show layouts as directory trees in a code block, one description line per folder, with the existing document count where there is one. Show all options in the same format.
 
 | Stage | What happens | The user |
 |---|---|---|
@@ -31,9 +41,9 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/init.js" survey
 
 It writes nothing. It reports the git state (branch, uncommitted changes), whether `.zoomdoc/schema.yaml` already exists, monorepo signals, and where the documents are (a tree with counts; generated and tool-owned folders and standard files such as `README.md` are listed apart). Show the result to the user and say plainly:
 
-- If the working tree has uncommitted changes, recommend a clean tree or a dedicated branch before stage 4, and ask which.
-- If a schema already exists, say so. Stage 2 then chooses between keeping it and redesigning it; never overwrite it without approval.
-- Point out folders that look user-designed (a deliberate structure, ADRs, specifications) and ask whether any of them must stay where they are.
+- Report the preflight in one line. Raise it as a question only if it blocks something: uncommitted changes (ask for a clean tree or a dedicated branch before stage 4).
+- If a schema already exists, this is the edge case: the question of stage 2 becomes "keep the schema as it is, or redesign it?". Show what the schema covers now and what each option would change. Never overwrite it without approval.
+- Folders that look user-designed (a deliberate structure, ADRs, specifications) stay where they are by default; say so in one line. Ask only about the ones you are unsure of. Folders that are generated or external are excluded; list them in the same line.
 
 ## 2. Choose a layout (mandatory)
 
@@ -46,7 +56,7 @@ Ask even when there are no documents. Offer three options, each as a directory t
 2. **The user's own layout**: ask which folders they want and what each is for, then show the result as a tree.
 3. **Keep the current layout**: build a tree from the folders found in stage 1, each with the existing count and a one-line description of what it holds.
 
-Give a recommendation and the reason (few documents or a mess: the recommended layout; many documents with an established practice: keep the current one), and wait for the user's choice. If the project is a monorepo or has several documentation roots, ask which root this schema covers.
+Give a recommendation and the reason (few documents or a mess: the recommended layout; many documents with an established practice: keep the current one), and wait for the user's choice. If the chosen option leaves the schema unchanged, say that nothing will be written, skip stages 3 and 4 and go to stage 5. If the project is a monorepo or has several documentation roots, ask which root this schema covers.
 
 ## 3. Fix the schema (mandatory approval)
 
