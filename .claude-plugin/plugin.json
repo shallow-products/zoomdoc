@@ -2,6 +2,5 @@
   "name": "zoomdoc",
   "version": "0.1.0",
   "description": "Schema-driven document governance plugin for AI coding agents",
-  "skills": "./skills",
-  "commands": "./commands"
+  "skills": "./skills"
 }

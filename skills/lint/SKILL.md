@@ -3,7 +3,7 @@ name: lint
 description: "Statically check all documents in the repository, then investigate and fix contradictions and duplicates"
 ---
 
-# /zoomdoc:lint command
+# /zoomdoc:lint
 
 A repository-wide investigation that the user starts. **The agent investigates and fixes freely, using the result of the static check (a script) as the base.**
 
