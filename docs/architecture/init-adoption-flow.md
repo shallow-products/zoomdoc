@@ -61,8 +61,13 @@ docs/
   └── howto/          変更なし
 ```
 
+## 実装
+
+- `commands/init.md` が、この5段階の手順と、全段階共通のルール（黙って決めない、ツリーで見せる、承認前は何も書かない）を定める。
+- `scripts/init.js survey` が段階0と1（読み取りのみ。git の状態、既存のスキーマ、モノレポの兆候、文書の所在と件数）、`scripts/init.js layout` が推奨構成のツリー、`scripts/init.js --schema-file <path>` が段階4（承認済みのスキーマを配置する。`folders` のないスキーマは拒否）を担う。ツリーの描画は `scripts/layout.js`、調査は `scripts/survey.js`。
+- 段階2の「ユーザーの希望の構成」と「現在の構成を維持」のツリーと、段階3の差分は、エージェントがスキーマ案から作って見せる。
+
 ## 未決事項
 
 - 導入時点の違反を記録するベースライン（以降は新しい違反だけを検出する）の扱い。
 - モノレポ、複数のドキュメントルート、大規模リポジトリの扱い。
-- 現行の `commands/init.md`（deploy、diagnose、reconcile）と `scripts/init.js` の、この5段階への置き換え。

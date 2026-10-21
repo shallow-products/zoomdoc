@@ -1,47 +1,84 @@
 ---
 name: init
-description: "Deploy the zoomdoc base, diagnose existing documents, and reconcile them if needed"
+description: "Adopt zoomdoc in a project: survey, choose a layout, fix the schema with the user, then deploy"
 ---
 
 # /zoomdoc:init command
 
-Brings `zoomdoc` into a usable state in three stages. Each stage is independent and safe to run again.
+Adopts `zoomdoc` in a project that usually already has documents. **The layout is decided first, through a dialogue that is never skipped, and the schema is written only after the user approves it.** This holds even when the project has no documents yet.
 
-| Stage | What it does | Nature |
+## Rules for every stage
+
+- **Never decide silently.** Before each step, tell the user what you will do and why. This includes following your own recommendation. Treat every choice as the user's choice and repeat it back.
+- **Show layouts as directory trees** in a code block, one line of description per folder, with the existing document count where there is one. Show all options in the same format.
+- **Write nothing before the schema is approved.** Stages 0 to 3 only read.
+- Every stage is safe to run again. If a stage was already done, say so and ask whether to redo it.
+
+| Stage | What happens | The user |
 |---|---|---|
-| ① Deploy | Puts `.zoomdoc/schema.yaml` and the templates in place | Non-destructive |
-| ② Diagnose | Shows the state of existing documents as counts | Read-only |
-| ③ Reconcile | Chooses how to resolve the problems found, and carries it out | Needs approval |
+| 0. Preflight | Check git, an existing schema, monorepo signals | Is told |
+| 1. Survey | List the existing documents | Reviews the list |
+| 2. Choose a layout | Recommended / the user's own / keep the current one | **Must choose** |
+| 3. Fix the schema | Draft the schema, show the tree diff | **Must approve** |
+| 4. Deploy | Place the schema and templates; migrate if needed | Approves |
+| 5. Finish | Diagnose again and report | Is told |
 
-## ① Deploy
-
-The documentation folder (the root) defaults to `docs/`. If the repository already has a documentation folder (`documentation/`, `doc/` and the like), show it as a candidate and confirm. If there is no candidate, or only one, do not ask.
+## 0. Preflight and 1. Survey
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/init.js" [--docs-root <path>]
+node "${CLAUDE_PLUGIN_ROOT}/scripts/init.js" survey
 ```
 
-It only puts `.zoomdoc/schema.yaml` and the templates in place. Existing files are never overwritten and no documentation folder is created (it is created when the first file is written). If a schema already exists, nothing changes.
+It writes nothing. It reports the git state (branch, uncommitted changes), whether `.zoomdoc/schema.yaml` already exists, monorepo signals, and where the documents are (a tree with counts; generated and tool-owned folders and standard files such as `README.md` are listed apart). Show the result to the user and say plainly:
 
-## ② Diagnose
+- If the working tree has uncommitted changes, recommend a clean tree or a dedicated branch before stage 4, and ask which.
+- If a schema already exists, say so. Stage 2 then chooses between keeping it and redesigning it; never overwrite it without approval.
+- Point out folders that look user-designed (a deliberate structure, ADRs, specifications) and ask whether any of them must stay where they are.
+
+## 2. Choose a layout (mandatory)
+
+Ask even when there are no documents. Offer three options, each as a directory tree:
+
+1. **Recommended layout**: zoomdoc's standard. Show it with
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/init.js" layout [--docs-root <path>]
+   ```
+2. **The user's own layout**: ask which folders they want and what each is for, then show the result as a tree.
+3. **Keep the current layout**: build a tree from the folders found in stage 1, each with the existing count and a one-line description of what it holds.
+
+Give a recommendation and the reason (few documents or a mess: the recommended layout; many documents with an established practice: keep the current one), and wait for the user's choice. If the project is a monorepo or has several documentation roots, ask which root this schema covers.
+
+## 3. Fix the schema (mandatory approval)
+
+Draft `schema.yaml` for the chosen layout, following the `zoomdoc:schema` skill (folders, descriptions, document entries). Save the draft outside the project (for example a temporary file) and show:
+
+1. The layout as a tree.
+2. A before and after tree diff when a schema or folders already exist (`+` new, `~` description changed, a plain line unchanged).
+3. What each folder's description will tell the agent to do.
+
+Ask for approval. If the user asks for changes, redraft and show again. Do not go on without an explicit yes.
+
+## 4. Deploy
+
+Tell the user which files will be created, then run:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/init.js" --schema-file <approved-schema.yaml>
+```
+
+It places the approved schema and the templates. Existing files are never overwritten and no documentation folder is created (it is created when the first file is written). It refuses a schema without folders.
+
+If the chosen layout needs the existing documents moved, ask whether to move them now, and follow the "Migration protocol" below. Migrating is optional: keeping the current layout needs no move.
+
+## 5. Finish
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/dist/doc_lint.js"
 ```
 
-Summarize the result as counts per kind of problem (folders and documents outside the schema, missing front matter, broken links and so on). If there are zero problems, this is the end.
+Report the result as counts per kind of problem, and say what was decided and what was written during this run (the layout chosen, the schema, any moves). If problems remain, say they are left as they are and the hooks will keep reporting them.
 
-## ③ Reconcile
-
-If there are problems, let the user choose from the following. Add a recommendation based on the counts and the number of documents.
-
-- **Move the documents to fit the schema** (migration): arrange the documents into the schema's folders. Follow the "Migration protocol" below. Recommended when there are few documents, or they are messy.
-- **Change the schema to fit the documents**: leave the documents where they are and, following `zoomdoc:schema`, bring the folders and descriptions in line with the existing practice. Recommended when there are many documents and the practice is established.
-- **Do nothing**: finish with the problems left. From then on, the hooks report what they detect.
-
-Whichever is chosen, run ② once more before finishing and show the result.
-
-## Migration protocol (when "move the documents to fit the schema" is chosen)
+## Migration protocol (when the user chooses to move documents in stage 4)
 
 If there are about 30 or more targets, confirm with the user before scanning.
 > "There are **N** targets. Scanning with subagents **consumes a lot of tokens**. Continue? To stop, organize by hand or change the schema to fit the documents."

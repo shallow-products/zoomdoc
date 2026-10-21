@@ -10,8 +10,11 @@ import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_DOCS_ROOT,
   normalizeDocsRoot,
+  parseSchemaFolderKeys,
   rebaseSchemaText
 } from './docs_root.js';
+import { recommendedLayout, renderTree } from './layout.js';
+import { renderSurvey, surveyProject } from './survey.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,6 +58,9 @@ function safeCopyFile(src, dest) {
  */
 export function initZoomdoc(targetRoot = getTargetProjectRoot(), options = {}) {
   const docsRoot = normalizeDocsRoot(options.docsRoot ?? DEFAULT_DOCS_ROOT);
+  if (options.schemaFile && !fs.existsSync(path.resolve(options.schemaFile))) {
+    throw new Error(`Schema file not found: ${path.resolve(options.schemaFile)}`);
+  }
   const result = {
     targetRoot,
     created: [],
@@ -71,14 +77,22 @@ export function initZoomdoc(targetRoot = getTargetProjectRoot(), options = {}) {
     fs.mkdirSync(targetTemplatesDir, { recursive: true });
   }
 
-  // 1. Copy schema.yaml
-  const schemaSrc = path.join(pluginRoot, '.zoomdoc', 'schema.yaml');
+  // 1. Put schema.yaml in place: the schema the user approved (--schema-file), else the standard one
+  const schemaSrc = options.schemaFile
+    ? path.resolve(options.schemaFile)
+    : path.join(pluginRoot, '.zoomdoc', 'schema.yaml');
   const schemaDest = path.join(targetZoomdocDir, 'schema.yaml');
   if (fs.existsSync(schemaSrc)) {
     if (!fs.existsSync(schemaDest)) {
+      const text = fs.readFileSync(schemaSrc, 'utf8');
+      if (options.schemaFile && parseSchemaFolderKeys(text).length === 0) {
+        throw new Error(
+          `${schemaSrc} has no folders: entries; refusing to install it as the schema`
+        );
+      }
       fs.writeFileSync(
         schemaDest,
-        rebaseSchemaText(fs.readFileSync(schemaSrc, 'utf8'), docsRoot),
+        options.schemaFile ? text : rebaseSchemaText(text, docsRoot),
         'utf8'
       );
       result.created.push('.zoomdoc/schema.yaml');
@@ -131,27 +145,52 @@ export function detectExistingDocs(targetRoot, docsRelDir = 'docs') {
 }
 
 // Direct CLI invocation
+//   init.js survey [dir] [--json]            read-only survey (stage 0 and 1)
+//   init.js layout [--docs-root <path>]      the recommended layout as a directory tree
+//   init.js [dir] [--docs-root <path>] [--schema-file <path>]   deploy
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   const args = process.argv.slice(2);
-  const flagIdx = args.indexOf('--docs-root');
-  const docsRoot = flagIdx >= 0 ? normalizeDocsRoot(args[flagIdx + 1]) : DEFAULT_DOCS_ROOT;
-  if (flagIdx >= 0) args.splice(flagIdx, 2);
+  const takeFlag = (name) => {
+    const i = args.indexOf(name);
+    if (i < 0) return undefined;
+    const value = args[i + 1];
+    args.splice(i, 2);
+    return value;
+  };
+  const takeSwitch = (name) => {
+    const i = args.indexOf(name);
+    if (i >= 0) args.splice(i, 1);
+    return i >= 0;
+  };
+  const command = ['survey', 'layout'].includes(args[0]) ? args.shift() : 'deploy';
+  const docsRootArg = takeFlag('--docs-root');
+  const docsRoot = docsRootArg ? normalizeDocsRoot(docsRootArg) : DEFAULT_DOCS_ROOT;
+  const schemaFile = takeFlag('--schema-file');
+  const asJson = takeSwitch('--json');
   const targetDir = args[0] ? path.resolve(args[0]) : getTargetProjectRoot();
-  console.log(`🚀 Initializing zoomdoc in: ${targetDir}`);
 
-  const res = initZoomdoc(targetDir, { docsRoot });
+  if (command === 'survey') {
+    const survey = surveyProject(targetDir);
+    console.log(asJson ? JSON.stringify(survey, null, 2) : renderSurvey(survey));
+  } else if (command === 'layout') {
+    console.log(renderTree(recommendedLayout(docsRoot)));
+  } else {
+    console.log(`🚀 Initializing zoomdoc in: ${targetDir}`);
 
-  if (res.created.length > 0) {
-    console.log('✅ Created:');
-    for (const f of res.created) {
-      console.log(`  + ${f}`);
+    const res = initZoomdoc(targetDir, { docsRoot, schemaFile });
+
+    if (res.created.length > 0) {
+      console.log('✅ Created:');
+      for (const f of res.created) {
+        console.log(`  + ${f}`);
+      }
     }
-  }
-  if (res.skipped.length > 0) {
-    console.log('ℹ️  Skipped (already exists):');
-    for (const f of res.skipped) {
-      console.log(`  - ${f}`);
+    if (res.skipped.length > 0) {
+      console.log('ℹ️  Skipped (already exists):');
+      for (const f of res.skipped) {
+        console.log(`  - ${f}`);
+      }
     }
+    console.log('\n🎉 zoomdoc setup complete! Next: check existing documents with /zoomdoc:lint.');
   }
-  console.log('\n🎉 zoomdoc setup complete! Next: check existing documents with /zoomdoc:lint.');
 }
