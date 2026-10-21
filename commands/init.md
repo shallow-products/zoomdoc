@@ -24,6 +24,31 @@ The user must see, within the first lines, what you are asking and what will cha
 5. **Say what happens next** for each answer in one line (for example: "Choosing 1 changes nothing, so stages 3 and 4 are skipped").
 6. Show layouts as directory trees in a code block, one description line per folder, with the existing document count where there is one. Show all options in the same format.
 
+## Message structure
+
+Use this order for a message that asks for a decision (stages 2 and 3, and stages 0 and 1 when something needs a decision). It is the default form; adapt it to the conversation, but keep the question first and the recommendation after the options. Write the labels in the user's language.
+
+```text
+[Question]        One sentence: what the user is asked to decide
+[Current]         One or two lines: only the facts that matter for the decision
+[Options]         Numbered: label / what changes / the consequence. Changes as a tree diff
+[Recommendation]  Which option and why, in one or two lines
+[Next]            What happens for each answer, one line each
+```
+
+Stages 0 and 1 without a decision: give [Current] in one or two lines and go on. Stage 5 uses [Decided], [Written] and [Remaining problems].
+
+## Before and after
+
+Show the before and after as a tree diff at these points, and nowhere else:
+
+| When | What the diff shows |
+|---|---|
+| Stage 2, in [Options] | For each option, how the schema's folders would change from the current ones (a preview) |
+| Stage 3, before asking for approval | The exact change to `schema.yaml` (the one that will be written) |
+| Stage 4, before moving documents | The `dry-run` list of moves, in the same `+ ~ -` form |
+| Stage 5, in [Written] | What was actually written, to compare with what was approved |
+
 | Stage | What happens | The user |
 |---|---|---|
 | 0. Preflight | Check git, an existing schema, monorepo signals | Is told |
