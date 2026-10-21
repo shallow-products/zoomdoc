@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { type MigrationPlan, applyMigrationPlan } from '../src/migration/apply.js';
+import { applyMigrationPlan, type MigrationPlan } from '../src/migration/apply.js';
 import { buildJudgePrompt } from '../src/migration/judge.js';
 import { listMarkdownFiles, readHeadAndTail } from '../src/migration/scanner.js';
 

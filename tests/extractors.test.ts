@@ -4,9 +4,9 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runMigrateCli } from '../src/migration/cli.ts';
 import {
-  NAMED_STRATEGIES,
   estimateTokens,
   extractExcerpt,
+  NAMED_STRATEGIES,
   recommendScanStrategy,
   resolveStrategy
 } from '../src/migration/extractors.ts';
