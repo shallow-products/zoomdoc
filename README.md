@@ -74,11 +74,11 @@ folders:
 
 `name`, `description`, `create` and `update` are required for every document entry; `template` and `remove` are optional. All values are natural language. See [Schema governance](./docs/architecture/schema-governance.md) for the full design.
 
-## Commands and skills
+## Skills
 
 | Invocation | Purpose |
 | :--- | :--- |
-| `/zoomdoc:init` | Deploy the schema, diagnose existing documents, reconcile them |
+| `/zoomdoc:init` | Adopt zoomdoc: survey the project, choose a layout with you, approve the schema, then deploy |
 | `/zoomdoc:lint` | Static check, then the agent investigates and fixes contradictions and duplicates |
 | `zoomdoc:read` · `write` · `move` · `schema` | Procedures the agent picks automatically |
 

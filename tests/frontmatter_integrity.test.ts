@@ -5,23 +5,20 @@ import yaml from 'yaml';
 
 const root = path.resolve(__dirname, '..');
 
-/** Files with front matter for the skills and commands the plugin loads */
+/** Files with front matter for the skills the plugin loads */
 function pluginMarkdown(): string[] {
   const files: string[] = [];
   for (const dir of fs.readdirSync(path.join(root, 'skills'))) {
     const f = path.join(root, 'skills', dir, 'SKILL.md');
     if (fs.existsSync(f)) files.push(f);
   }
-  for (const f of fs.readdirSync(path.join(root, 'commands'))) {
-    if (f.endsWith('.md')) files.push(path.join(root, 'commands', f));
-  }
   return files;
 }
 
-describe('skill and command frontmatter', () => {
+describe('skill frontmatter', () => {
   const files = pluginMarkdown();
 
-  it('finds the skills and commands', () => {
+  it('finds the skills', () => {
     expect(files.length).toBeGreaterThanOrEqual(6);
   });
 

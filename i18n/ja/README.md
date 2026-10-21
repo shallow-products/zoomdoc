@@ -74,11 +74,11 @@ folders:
 
 文書の行は、`name`・`description`・`create`・`update` が必須で、`template` と `remove` は任意です。値はすべて自然文です。設計の全体は、[スキーマのガバナンス](../../docs/architecture/schema-governance.md)を参照してください。
 
-## コマンドとスキル
+## スキル
 
 | 呼び出し | 目的 |
 | :--- | :--- |
-| `/zoomdoc:init` | スキーマの配備、既存文書の診断、整合 |
+| `/zoomdoc:init` | zoomdoc の導入: プロジェクトの調査、構成の選択、スキーマの承認、配備 |
 | `/zoomdoc:lint` | 静的チェックのあと、エージェントが矛盾・重複を調べて直す |
 | `zoomdoc:read` · `write` · `move` · `schema` | エージェントが自動で選ぶ手順 |
 
