@@ -4,9 +4,9 @@ import { getDocsRoot, normalizeDocsRoot } from '../../scripts/docs_root.js';
 import { findProjectRoot } from '../root_finder.js';
 import { loadSchema } from '../schema_loader.js';
 import {
-  type MigrationPlan,
   applyMigrationPlan,
   formatFrontmatter,
+  type MigrationPlan,
   rollbackMigration
 } from './apply.js';
 import {

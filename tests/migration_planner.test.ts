@@ -4,9 +4,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 // @ts-expect-error - JavaScript script module without separate d.ts
 import { detectExistingDocs } from '../scripts/init.js';
 import {
-  type MigrationPlan,
   applyMigrationPlan,
   formatFrontmatter,
+  type MigrationPlan,
   rollbackMigration,
   stripFrontmatter
 } from '../src/migration/apply.js';
