@@ -5,6 +5,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const HOOKS = path.resolve(__dirname, '../scripts/hooks');
+const PLACEHOLDER = ['$', '{CLAUDE_PLUGIN_ROOT}'].join('');
 
 describe('hooks stay quiet when nothing changed', () => {
   let dir: string;
@@ -166,6 +167,37 @@ describe('hooks stay quiet when nothing changed', () => {
     for (const rel of ['hooks/hooks.json', 'hooks.json']) {
       const text = fs.readFileSync(path.resolve(HOOKS, '../..', rel), 'utf8');
       expect(text).not.toContain('PostToolUse');
+    }
+  });
+
+  it('declares Claude Code hooks in exec form, so an install path with a space works', () => {
+    const pluginRoot = path.resolve(HOOKS, '../..');
+    const spaced = fs.mkdtempSync(path.join(os.tmpdir(), 'zoomdoc plugin '));
+    try {
+      fs.cpSync(path.join(pluginRoot, 'scripts'), path.join(spaced, 'scripts'), {
+        recursive: true
+      });
+      const config = JSON.parse(fs.readFileSync(path.join(pluginRoot, 'hooks/hooks.json'), 'utf8'));
+      const handlers = Object.values(config.hooks).flatMap((groups) =>
+        (groups as { hooks: { type: string; command: string; args?: string[] }[] }[]).flatMap(
+          (g) => g.hooks
+        )
+      );
+      expect(handlers.length).toBeGreaterThan(0);
+      for (const h of handlers) {
+        // Exec form: the placeholder lives in args, never in a shell string
+        expect(h.command, 'command is a bare executable').not.toContain('$');
+        expect(Array.isArray(h.args), 'args is present').toBe(true);
+        const args = (h.args ?? []).map((a) => a.replace(PLACEHOLDER, spaced));
+        // Runs from a project without a schema: silent, and must not fail on the path
+        const out = execFileSync(h.command, args, {
+          cwd: fs.mkdtempSync(path.join(os.tmpdir(), 'zoomdoc-proj-')),
+          encoding: 'utf8'
+        });
+        expect(out).toBe('');
+      }
+    } finally {
+      fs.rmSync(spaced, { recursive: true, force: true });
     }
   });
 });
